@@ -1,114 +1,110 @@
 import java.util.Scanner;
 
-public class jogoDaVelha {
+public class JogoDaVelha {
+
+    public static void imprimirTabuleiro(char[][] tabuleiro){
+        limparTela();
+        System.out.println();
+        for (int linha = 0; linha < 3; linha++){
+            for (int coluna = 0; coluna < 3; coluna++){
+                System.out.print("\t"+tabuleiro[linha][coluna]);
+                if (coluna < 2)
+                    System.out.print("\t|");
+            }
+            System.out.println("");
+            if (linha < 2)
+                System.out.println("----------------------------------------------");
+        }
+        System.out.println();
+    }
+
+    public static void limparTela(){
+        try {
+            new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+        } catch (Exception e) {
+            System.out.println("Erro ao tentar limpar a tela");
+        }
+    }
+
+    public static char verificarVencedor(char[][] tabuleiro) {
+
+        for (int i = 0; i < 3; i++) {
+            if (tabuleiro[i][0] != ' ' &&
+                tabuleiro[i][0] == tabuleiro[i][1] &&
+                tabuleiro[i][1] == tabuleiro[i][2]) {
+                return tabuleiro[i][0];
+            }
+        }
+
+        for (int j = 0; j < 3; j++) {
+            if (tabuleiro[0][j] != ' ' &&
+                tabuleiro[0][j] == tabuleiro[1][j] &&
+                tabuleiro[1][j] == tabuleiro[2][j]) {
+                return tabuleiro[0][j];
+            }
+        }
+
+        if (tabuleiro[0][0] != ' ' &&
+            tabuleiro[0][0] == tabuleiro[1][1] &&
+            tabuleiro[1][1] == tabuleiro[2][2]) {
+            return tabuleiro[0][0];
+        }
+
+        if (tabuleiro[0][2] != ' ' &&
+            tabuleiro[0][2] == tabuleiro[1][1] &&
+            tabuleiro[1][1] == tabuleiro[2][0]) {
+            return tabuleiro[0][2];
+        }
+
+        return ' ';
+    }
 
     public static void main(String[] args) {
-        Espacos[][] jogo = new Espacos[3][3];
-        char simboloAtual = 'X'; // Para vermos o símbolo de vez
-        boolean game = true;
-        String vitoria = "";
-        Scanner scan = new Scanner(System.in); // Qual a posição desejada para marcar
+        char[][] matriz = {
+            {' ', ' ', ' '},
+            {' ', ' ', ' '},
+            {' ', ' ', ' '},
+        };
+        
+        System.out.println("=== Jogo Da Velha ===");
 
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                jogo[i][j] = new Espacos();
+        boolean jogoAcontecendo = true;
+        char simboloAtual = 'X';
+        int linha, coluna;
+
+        Scanner entrada = new Scanner(System.in);
+
+        while (jogoAcontecendo){
+            imprimirTabuleiro(matriz);
+            System.out.println("Vez do jogador " + simboloAtual);
+
+            System.out.print("Informe a linha: ");
+            linha = entrada.nextInt();
+            System.out.print("Informe a coluna: ");
+            coluna = entrada.nextInt();
+            
+            if (linha < 0 || linha > 2 || coluna < 0 || coluna > 2) {
+                System.out.println("Essa posição não existe! Tente novamente entre 0 e 2.");
+                continue;
             }
-        }
 
-        while (game) {
-            desenhaJogo(jogo);
-            vitoria = verificarVitoria(jogo);
+            if (matriz[linha][coluna] == ' ') {
+                matriz[linha][coluna] = simboloAtual;
 
-            if (!vitoria.equals("")) {
-                System.out.printf("Jogador %s venceu%n", vitoria);
-                break;
-            }
-
-            try {
-                int[] pos = jogar(scan, simboloAtual);
-                boolean jogadaValida = verificarJogada(jogo, pos, simboloAtual);
-
-                if (jogadaValida) {
-                    simboloAtual = (simboloAtual == 'X') ? 'O' : 'X';
-                } else {
-                    System.out.println("Jogada inválida. Tente novamente.");
+                char vencedor = verificarVencedor(matriz);
+                if (vencedor != ' ') {
+                    imprimirTabuleiro(matriz);
+                    System.out.println("Jogador " + vencedor + " venceu o jogo!");
+                    break; // Fim
                 }
-            } catch (Exception e) {
-                System.out.println("Erro durante a jogada.");
-                scan.nextLine(); // Limpa 
+
+                simboloAtual = (simboloAtual == 'X') ? 'O' : 'X';
+            } else {
+                System.out.println("Posição ocupada! Tente novamente.");
             }
         }
 
+        entrada.close();
         System.out.println("Fim de jogo");
-    }
-
-    public static void desenhaJogo(Espacos[][] jogo) {
-        System.out.println("     0   1   2");
-        for (int i = 0; i < 3; i++) {
-            System.out.print(" " + i + "  ");
-            for (int j = 0; j < 3; j++) {
-                System.out.print(" " + jogo[i][j].getSimbolo() + " ");
-                if (j < 2) System.out.print("|");
-            }
-            System.out.println();
-            if (i < 2) System.out.println("    -----------");
-        }
-    }
-
-    public static void limparTela() {
-        for (int i = 0; i < 50; i++) {
-            System.out.println();
-        }
-    }
-
-    public static int[] jogar(Scanner scan, char simbolo) {
-        int[] p = new int[2];
-        System.out.printf("Quem joga: %c%n", simbolo);
-        System.out.print("Informe a linha: ");
-        p[0] = scan.nextInt();
-        System.out.print("Informe a coluna: ");
-        p[1] = scan.nextInt();
-        return p;
-    }
-
-    public static boolean verificarJogada(Espacos[][] jogo, int[] p, char simboloAtual) {
-        if (jogo[p[0]][p[1]].getSimbolo() == ' ') {
-            jogo[p[0]][p[1]].setSimbolo(simboloAtual);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static String verificarVitoria(Espacos[][] jogo) {
-    
-        for (int i = 0; i < 3; i++) {
-            if (jogo[i][0].getSimbolo() != ' ' &&
-                jogo[i][0].getSimbolo() == jogo[i][1].getSimbolo() &&
-                jogo[i][1].getSimbolo() == jogo[i][2].getSimbolo()) {
-                return String.valueOf(jogo[i][0].getSimbolo());
-            }
-        }
-        return "";
-    }
-}
-
-class Espacos {
-    private char simbolo;
-
-    public Espacos() {
-        this.simbolo = ' ';
-    }
-
-    public char getSimbolo() {
-        return this.simbolo;
-    }
-
-    public void setSimbolo(char simbolo) {
-        if (this.simbolo == ' ') {
-            this.simbolo = simbolo;
-        } else {
-            System.out.println("Campo já usado");
-        }
     }
 }
